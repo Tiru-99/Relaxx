@@ -1,11 +1,14 @@
 /**
  * Game registry — the single source of truth for every game on the site.
- * To add a game: drop its build into `public/games/<slug>/index.html`
+ * To add a game: put it in `public/games/<slug>/` (entry point `index.html`)
  * and add an entry below. Pages, cards and routes are generated from this list.
  */
 
 import type { Metadata } from "next";
 import type { Biome, Game } from "@/types/game";
+
+/** URL of a game's entry page, served as a static file from `public/games/<slug>/`. */
+export const gamePath = (slug: string): string => `/games/${slug}/index.html`;
 
 export const games: Game[] = [
   {
@@ -13,19 +16,22 @@ export const games: Game[] = [
     title: "Lumen Isle",
     tagline: "a quiet place to wander",
     description:
-      "Drift across a small glowing island as day turns to dusk. Plant flowers, gather light motes, ring the stones and release sky lanterns. Nothing to lose, no timers.",
+      "Wander a large glowing island from sunlit meadow to highland falls. Find twelve quiet places, meet the creatures, gather motes of light and wake nine sleeping lanterns. Your journal remembers where you have been. Nothing to lose, no timers.",
     biome: "island",
-    duration: "10–20 min",
+    duration: "20–60 min",
     controls: [
       { keys: "W A S D", action: "wander" },
+      { keys: "shift", action: "drift faster" },
       { keys: "drag", action: "look" },
       { keys: "scroll", action: "zoom" },
       { keys: "space", action: "hop" },
       { keys: "E", action: "plant a flower" },
+      { keys: "Q", action: "listen for unfound places" },
+      { keys: "J", action: "journal and map" },
       { keys: "B", action: "breathe" },
       { keys: "M", action: "music" },
     ],
-    src: "/games/lumen-isle/index.html",
+    src: gamePath("lumen-isle"),
     headphones: true,
   },
 ];

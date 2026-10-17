@@ -54,7 +54,7 @@ Write code like a senior engineer who has to maintain it for years:
   - Long static data (lists, configs) → move it into its own `*.data.ts` file.
   - A mixed module → separate the pure logic from the side-effecting code.
 - Never "split" by cutting a file into `part1` / `part2`. Each new file must have a clear single purpose and a clear name.
-- Exempt: vendored game builds in `public/games/**` and generated files.
+- Exempt: third-party or generated game builds and generated files. Our own game code in `public/games/**` follows the limit.
 
 ---
 
@@ -89,7 +89,7 @@ Folders marked *(when needed)* don't exist yet. Create them only when the first 
 arrives. Don't scaffold empty folders.
 
 ```
-public/games/<slug>/index.html    Self-contained game builds (vendored, never imported)
+public/games/<slug>/              Each game and its core logic: index.html + styles.css + src/ (see §12). Never imported by src/
 src/
   app/                            Routing layer only
     layout.tsx, page.tsx, ...     Pages compose components, with little logic
@@ -239,12 +239,60 @@ app/api/<resource>/route.ts   →   services/<resource>.service.ts
 
 ---
 
-## 12. Adding a game
+## 12. Games
 
-1. Put the build at `public/games/<slug>/index.html`. It must run standalone.
-2. Add an entry to `games` in `src/lib/games.ts` (unique `slug`, `biome`, `controls`, `src`).
+Games are **completely separate from the site**. Each one lives in its own `public/games/<slug>/` folder,
+runs inside `<GameFrame>` (an iframe), and shares no code, types or styles with `src/`. The site only knows
+a game's registry entry. Game code must never import from `src/`, and `src/` must never import game code.
+
+**How a game is served:** `public/games/<slug>/` is plain static files, so `public/games/lumen-isle/index.html`
+is available at `/games/lumen-isle/index.html`. There is no build step: edit a file and reload. The registry
+points at a game with `gamePath(slug)`.
+
+### Game folder layout
+
+Plain browser ES modules with no build step. three.js comes from a pinned CDN version via the import map in `index.html`.
+
+```
+public/games/<slug>/
+  index.html          Markup for overlays + import map + <script type="module" src="./src/main.js">
+  styles.css          Game UI styles (the game's own palette; site tokens don't apply here)
+  src/
+    main.js           Entry point: builds systems and wires the frame loop. Reads like a table of contents
+    config.js         Every tuning number and performance budget (counts, sizes, speeds)
+    core/             Engine pieces with no game knowledge: renderer, loop, math, shaders, spatial grid
+    audio/            Web Audio engine, music, ambience, sound effects
+    world/            Terrain, water, sky, vegetation. world/layout.js is the single map of positions
+    player/           Input, the player character, camera, particle pool
+    gameplay/         Rules: collectibles, goals, discoveries, save/load
+    landmarks/        One file per place: { id, name, message, build(context) }, listed in landmarks/index.js
+    creatures/        One file per creature, listed in creatures/index.js
+    ui/               DOM overlays: HUD, toasts, journal
+```
+
+Use the same layer idea as the site: `core/` knows nothing about the game, `world/` doesn't know about
+`gameplay/`, and `ui/` only reads state. Systems get their dependencies passed in rather than reaching for globals.
+
+### Game code conventions
+
+- The same quality bar as the site: 500 lines max per file (aim for under ~200), one responsibility per file,
+  and comments that explain *why*.
+- JavaScript with JSDoc types on exported functions whose shapes aren't obvious.
+- Factories (`createX(deps) → { update, ... }` or an `update(dt, time)` function) instead of classes with hidden state.
+- **Performance budget:** share geometries and materials, use `InstancedMesh` for anything repeated, and animate
+  large counts (grass, leaves, waves) in shaders. Don't allocate in the frame loop, and don't add per-object point
+  lights (use glow sprites instead). Keep counts in `config.js` `BUDGET`.
+- Pure logic (terrain heights, math) stays free of three.js and the DOM so it can be tested in Node.
+- `localStorage` use must be wrapped in try/catch, and the game must work without it.
+- Keep a `window.__<slug>` debug hook for testing (teleport, time of day, give items).
+
+### Adding a game
+
+1. Create `public/games/<slug>/` with the layout above. Use relative paths (`./src/main.js`) inside the game.
+2. Add an entry to `games` in `src/lib/games.ts` (unique `slug`, `biome`, `controls`, `src: gamePath("<slug>")`).
    A new biome needs a type in `src/types/game.ts`, a label in `biomeLabel`, an `--art-<biome>` token in `globals.css`, and an entry in `biomeArt` in `GameCard.tsx`.
 3. Nothing else is needed. Cards, routes and metadata are generated, so don't hand-write per-game pages.
+4. Keep the registry's `controls` in sync with the game's own key bindings.
 
 ## 13. Calm design rules (product requirements)
 
@@ -260,5 +308,15 @@ app/api/<resource>/route.ts   →   services/<resource>.service.ts
 
 - Don't add another UI/CSS framework or component library (Tailwind is the styling system), a state library, ORM or analytics without asking.
 - Don't create empty folders or layers "for later".
-- Don't edit `public/games/**` as part of site changes. Treat them as vendored builds.
+- Don't mix game and site changes in one change set. Site work doesn't touch `public/games/**`, and game work doesn't touch `src/` (except its registry entry).
 - Don't commit `.next/`, `node_modules/` or `.env*.local`. Never hard-code secrets. Read them from env in `src/lib/env.ts`.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

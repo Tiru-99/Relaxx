@@ -12,7 +12,7 @@ Open http://localhost:3000.
 ## Structure
 
 ```
-public/games/<slug>/   Self-contained game builds (Lumen Isle lives here)
+public/games/<slug>/   Each game and its logic, separate from the site (Lumen Isle lives here)
 src/
   app/                 Routes: home, /games, /games/[slug], /about, 404
   components/

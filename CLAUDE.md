@@ -33,5 +33,5 @@ This section only adds how to *work* in this repo.
 ## Ask before
 
 - Adding a dependency, a new top-level folder/layer, or an API route.
-- Editing anything in `public/games/**`.
+- Editing anything in `public/games/**` when the task is about the site (game work is fine when asked).
 - Deleting files or changing the public URL of a page.
