@@ -1,0 +1,127 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens: a soft, low-contrast nature palette. Change colors here, never in components.
+ * Raw values live on :root (so they can switch for dark mode). @theme maps them to Tailwind
+ * utilities: bg-bg, text-ink, text-ink-soft, border-line, bg-accent-soft, shadow-soft, ease-calm, ...
+ */
+:root {
+  --bg: #f4f1e8;          /* morning mist */
+  --bg-elev: #fbf9f3;
+  --ink: #2f3a33;         /* deep moss */
+  --ink-soft: #5f6d63;
+  --line: #dcd6c6;
+  --accent: #6b8f71;      /* sage */
+  --accent-soft: #dfe8dc;
+  --glow: #e9c98f;        /* lantern light */
+  --sky-a: #cfe0e3;
+  --sky-b: #f4e6d4;
+  --shadow: 0 10px 30px -18px rgba(47, 58, 51, 0.35);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141a22;        /* night forest */
+    --bg-elev: #1b2330;
+    --ink: #ece6d8;
+    --ink-soft: #a7b0a8;
+    --line: #2b3542;
+    --accent: #9cc3a2;
+    --accent-soft: #233229;
+    --glow: #f1cf96;
+    --sky-a: #1d2a3d;
+    --sky-b: #2a2338;
+    --shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.7);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #141a22;
+  --bg-elev: #1b2330;
+  --ink: #ece6d8;
+  --ink-soft: #a7b0a8;
+  --line: #2b3542;
+  --accent: #9cc3a2;
+  --accent-soft: #233229;
+  --glow: #f1cf96;
+  --sky-a: #1d2a3d;
+  --sky-b: #2a2338;
+  --shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.7);
+}
+
+/* Fixed tokens: identical in light and dark, because game frames and biome art match the games themselves. */
+:root {
+  --frame-bg: #1b1f3a;
+  --frame-ink: #fdf6ec;
+  --frame-control: rgba(255, 255, 255, 0.1);
+  --frame-control-line: rgba(255, 255, 255, 0.3);
+
+  /* Used as bg-(image:--art-<biome>) */
+  --art-island: linear-gradient(160deg, #3b3f7a, #1b1f3a 60%, #e9c98f 140%);
+  --art-forest: linear-gradient(160deg, #6b8f71, #2f3a33);
+  --art-meadow: linear-gradient(160deg, #e7dca8, #8fb07a);
+  --art-ocean: linear-gradient(160deg, #a9d1d6, #2c5a73);
+  --art-mountain: linear-gradient(160deg, #d8d4e6, #5f6d8a);
+  --art-sky: linear-gradient(160deg, #f4d8c8, #8fa7d1);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-elev: var(--bg-elev);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-glow: var(--glow);
+  --color-sky-a: var(--sky-a);
+  --color-sky-b: var(--sky-b);
+  --color-frame-bg: var(--frame-bg);
+  --color-frame-ink: var(--frame-ink);
+  --color-frame-control: var(--frame-control);
+  --color-frame-control-line: var(--frame-control-line);
+
+  --font-sans: var(--font-body), system-ui, sans-serif;
+  --radius-card: 18px;
+  --shadow-soft: var(--shadow);
+  --ease-calm: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-drift: drift 9s ease-in-out infinite;
+  @keyframes drift {
+    0%   { opacity: 0;   transform: translate(0, 0); }
+    30%  { opacity: 0.8; }
+    70%  { opacity: 0.5; }
+    100% { opacity: 0;   transform: translate(24px, -60px); }
+  }
+}
+
+/* Page-width wrapper with the 16px mobile gutter. */
+@utility site-container {
+  width: 100%;
+  max-width: 1080px;
+  margin-inline: auto;
+  padding-inline: 16px;
+}
+
+@layer base {
+  body {
+    @apply min-h-dvh bg-bg font-sans leading-relaxed text-ink antialiased;
+  }
+
+  h1, h2, h3 {
+    @apply leading-tight font-medium tracking-wide;
+  }
+
+  kbd {
+    @apply rounded-md border border-line bg-bg-elev px-1.5 py-px font-sans text-[0.8em];
+  }
+
+  :focus-visible {
+    @apply rounded-md outline-2 outline-offset-3 outline-accent;
+  }
+
+  /* Calm by default: respect users who ask for less motion. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+}
