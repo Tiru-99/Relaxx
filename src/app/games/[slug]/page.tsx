@@ -2,17 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { GameFrame } from "@/components/games/GameFrame";
-import { games, getGame } from "@/lib/games";
+import { getGame, getGameMetadata, getGameStaticParams } from "@/lib/games";
 
 type Props = { params: Promise<{ slug: string }> };
 
 export function generateStaticParams(): { slug: string }[] {
-  return games.map((g) => ({ slug: g.slug }));
+  return getGameStaticParams();
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const game = getGame((await params).slug);
-  return game ? { title: game.title, description: game.description } : {};
+  return getGameMetadata((await params).slug);
 }
 
 export default async function GamePage({ params }: Props) {

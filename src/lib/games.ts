@@ -4,6 +4,7 @@
  * and add an entry below. Pages, cards and routes are generated from this list.
  */
 
+import type { Metadata } from "next";
 import type { Biome, Game } from "@/types/game";
 
 export const games: Game[] = [
@@ -31,6 +32,16 @@ export const games: Game[] = [
 
 export function getGame(slug: string): Game | undefined {
   return games.find((g) => g.slug === slug);
+}
+
+/** Static params for `/games/[slug]`: one pre-rendered page per registered game. */
+export function getGameStaticParams(): { slug: string }[] {
+  return games.map((g) => ({ slug: g.slug }));
+}
+
+export function getGameMetadata(slug: string): Metadata {
+  const game = getGame(slug);
+  return game ? { title: game.title, description: game.description } : {};
 }
 
 export const biomeLabel: Record<Biome, string> = {
