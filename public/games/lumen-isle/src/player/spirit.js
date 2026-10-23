@@ -4,7 +4,7 @@ import { sfx } from '../audio/sfx.js';
 import { PLAYER } from '../config.js';
 import { glowMaterial } from '../core/glow.js';
 import { angleDelta, clamp, jitter } from '../core/math.js';
-import { groundAt, canStandAt } from '../world/ground.js';
+import { canStandAt, groundAt, isOnPlatform, keepOffRails } from '../world/ground.js';
 import { heightAt, nearestRiver } from '../world/heightfield.js';
 
 /** The little glowing spirit you play as: its look, movement, collisions and footsteps. */
@@ -65,8 +65,8 @@ export function createSpirit({ scene, solids, sparks, env }, start) {
     state.vx += (targetVx - state.vx) * response;
     state.vz += (targetVz - state.vz) * response;
 
-    // Slide along the shoreline instead of stopping dead.
-    let nx = state.x + state.vx * dt, nz = state.z + state.vz * dt;
+    // Railings first (so the bridge's edges feel the same on both sides), then slide along the shoreline.
+    let [nx, nz] = keepOffRails(state.x, state.z, state.x + state.vx * dt, state.z + state.vz * dt, PLAYER.radius);
     if (!canStandAt(nx, state.z)) { nx = state.x; state.vx *= 0.5; }
     if (!canStandAt(nx, nz)) { nz = state.z; state.vz *= 0.5; }
     [nx, nz] = collide(nx, nz);
@@ -94,8 +94,7 @@ export function createSpirit({ scene, solids, sparks, env }, start) {
     if (speed > 0.3) state.facing += angleDelta(state.facing, Math.atan2(state.vx, state.vz)) * (1 - Math.exp(-dt * 10));
 
     const river = nearestRiver(state.x, state.z, 3);
-    const onPlatform = groundAt(state.x, state.z) > heightAt(state.x, state.z) + 0.05;
-    const inStream = !onPlatform && river !== null && river.distance < river.width;
+    const inStream = !isOnPlatform(state.x, state.z) && river !== null && river.distance < river.width;
     if (state.grounded && speed > 0.8) {
       state.stepDistance += speed * dt;
       if (state.stepDistance > 1.5) {

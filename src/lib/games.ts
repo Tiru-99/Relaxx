@@ -30,6 +30,7 @@ export const games: Game[] = [
       { keys: "J", action: "journal and map" },
       { keys: "B", action: "breathe" },
       { keys: "M", action: "music" },
+      { keys: "H", action: "show or hide controls" },
     ],
     src: gamePath("lumen-isle"),
     headphones: true,

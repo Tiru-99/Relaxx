@@ -23,8 +23,10 @@ import { createInput } from './player/input.js';
 import { createSparks } from './player/sparks.js';
 import { createSpirit } from './player/spirit.js';
 import { createBreathGuide } from './ui/breath.js';
+import { createHints } from './ui/hints.js';
 import { createHud } from './ui/hud.js';
 import { createJournal } from './ui/journal.js';
+import { createTimeOfDay } from './ui/time-of-day.js';
 import { createToast } from './ui/toast.js';
 import { createClouds } from './world/clouds.js';
 import { createEnvironment } from './world/environment.js';
@@ -78,8 +80,8 @@ const listen = createListen(scene, { player, cameraRig, discoveries, toast });
 const hud = createHud($('#hud'), journal, LANDMARKS.length);
 const breath = createBreathGuide($('#breath'));
 const journalPanel = createJournal($('#journal'), journal, { places: discoveries.places, getSpirit: () => player.state });
-const hints = $('#hints');
-let hintsOn = true;
+const hints = createHints($('#hints'));
+const timeOfDay = createTimeOfDay($('#sky-time'), env, { toast });
 
 input.onAction('plant', () => {
   if (!player.state.grounded) return;
@@ -88,7 +90,7 @@ input.onAction('plant', () => {
 });
 input.onAction('breathe', () => breath.toggle());
 input.onAction('music', () => toast.show(toggleMusic() ? 'music on' : 'music off'));
-input.onAction('hints', () => { hintsOn = !hintsOn; hints.style.opacity = hintsOn ? '1' : '0'; });
+input.onAction('hints', () => hints.toggle());
 input.onAction('journal', () => journalPanel.toggle());
 input.onAction('close', () => journalPanel.toggle(false));
 input.onAction('listen', () => listen.listen());
@@ -117,6 +119,8 @@ loop.add((dt, time) => {
   listen.update(dt);
   breath.update(dt);
   toast.update(dt);
+  hints.update(dt);
+  timeOfDay.update();
   journalPanel.update(dt);
   sharedUniforms.uCameraPos.value.copy(camera.position);
   renderer.render(scene, camera);
@@ -139,12 +143,12 @@ begin.addEventListener('click', () => {
   start.style.pointerEvents = 'none';
   setTimeout(() => start.remove(), 2600);
   hud.show();
-  hints.style.opacity = '1';
+  hints.showFull();
+  timeOfDay.show();
   const returning = journal.progress.places.length > 0;
   setTimeout(() => toast.show(
     returning ? 'welcome back' : 'gather motes of light and wake the nine lanterns',
     6, returning ? 'the island kept your place' : 'press J for your journal, Q to listen'), 2500);
-  setTimeout(() => { if (hintsOn) { hintsOn = false; hints.style.opacity = '0'; } }, 40000);
 }, { once: true });
 
 // Handy for testing from the console: __isle.give(9), __isle.time(0.9), __isle.goto(52, 74), __isle.look(Math.PI)

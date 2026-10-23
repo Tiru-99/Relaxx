@@ -2,11 +2,10 @@ import * as THREE from 'three';
 import { glowMaterial } from '../core/glow.js';
 import { clamp, jitter, lerp, rand, smoothstep } from '../core/math.js';
 import { addWindSway } from '../core/wind.js';
-import { heightAt, river } from './heightfield.js';
+import { heightAt, river, RIVER_DEPTH } from './heightfield.js';
 
 /** The stream's water surface, foam on the falls, drifting glints, reeds, pebbles and lily pads. */
 
-const DEPTH = 0.28;
 const DEEP = new THREE.Color(0x6aaebb), PALE = new THREE.Color(0xb8e2dc), FOAM = new THREE.Color(0xf4fbfa);
 
 /** Position and sideways direction at a fractional sample index along the stream. */
@@ -15,7 +14,7 @@ export function riverFrame(u, out = { x: 0, y: 0, z: 0, ax: 0, az: 0, width: 1 }
   const dx = river.xs[i + 1] - river.xs[i], dz = river.zs[i + 1] - river.zs[i], len = Math.hypot(dx, dz) || 1;
   out.x = lerp(river.xs[i], river.xs[i + 1], f);
   out.z = lerp(river.zs[i], river.zs[i + 1], f);
-  out.y = lerp(river.bed[i], river.bed[i + 1], f) + DEPTH;
+  out.y = lerp(river.bed[i], river.bed[i + 1], f) + RIVER_DEPTH;
   out.ax = -dz / len;
   out.az = dx / len;
   out.width = lerp(river.width[i], river.width[i + 1], f);

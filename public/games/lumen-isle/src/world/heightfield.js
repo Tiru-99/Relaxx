@@ -32,8 +32,14 @@ function baseHeight(x, z) {
     // Plateaus have a flat top and a steeper edge; ordinary hills are soft domes.
     h += hill.plateau ? hill.height * smoothstep(1.05, 0.7, d) : hill.height * Math.exp(-d * d * 2.2);
   }
+  // Well inland, never dip to sea level: the sea plane would show through as a small pool that
+  // rises and falls with the waves. The stream is carved later, so it isn't affected.
+  if (coast > 0.95) h = Math.max(h, 0.6);
   return h * coast + (1 - coast) * Math.min(h, -1.5);
 }
+
+/** How deep the stream's water is above its bed. */
+export const RIVER_DEPTH = 0.28;
 
 // ---- stream: sampled once along a smooth curve, with a bed that only ever flows downhill
 const RIVER_SAMPLES = 180;
